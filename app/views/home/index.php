@@ -14,5 +14,7 @@
     <p><strong>Current Date and Time:</strong> <?= $currentDateTime ?></p>
     
     <a href="/login/logout">Logout</a>
+    <a href="/reminders" class="btn btn-primary">Go to My Reminders</a>
+
 </body>
 </html>
