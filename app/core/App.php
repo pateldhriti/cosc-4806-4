@@ -26,11 +26,8 @@ class App {
 
             $_SESSION['controller'] = $this->controller;
 
-            /* This is if we have a special URL in the index.
-             * For example, our apply page is public and in the index method
-             * We do not want the method to be login in this case, but instead index
-             * 
-             */
+      
+             
             if (in_array($this->controller, $this->special_url)) { 
               $this->method = 'index';
             }
