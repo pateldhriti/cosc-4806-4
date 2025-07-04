@@ -24,12 +24,11 @@ class User {
         ]);
     }
 
-    
     public function authenticate($username, $password) {
         $db = db_connect();
         $username = strtolower(trim($username));
 
-      \
+        // ✅ Check last 3 bad login attempts
         $stmt = $db->prepare("SELECT * FROM log WHERE username = :username AND attempt = 'bad' ORDER BY timestamp DESC LIMIT 3");
         $stmt->execute(['username' => $username]);
         $attempts = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -41,26 +40,34 @@ class User {
             }
         }
 
+        // ✅ Try to find user
         $stmt = $db->prepare("SELECT * FROM users WHERE username = :username");
         $stmt->execute(['username' => $username]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
+        // ✅ Successful login
         if ($user && password_verify($password, $user['password'])) {
             $this->log_attempt($username, 'good');
+
+            // ✅ Session setup for authentication and user info
             $_SESSION['auth'] = true;
             $_SESSION['username'] = $username;
-            $_SESSION['user'] = $user; 
+            $_SESSION['user'] = $user; // ✅ This makes $_SESSION['user']['id'] available
+
             return true;
         } else {
+            
             $this->log_attempt($username, 'bad');
             return false;
         }
     }
- 
 
     private function log_attempt($username, $result) {
         $db = db_connect();
         $stmt = $db->prepare("INSERT INTO log (username, attempt) VALUES (:username, :result)");
-        $stmt->execute(['username' => $username, 'result' => $result]);
+        $stmt->execute([
+            'username' => $username,
+            'result' => $result
+        ]);
     }
 }

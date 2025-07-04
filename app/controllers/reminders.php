@@ -9,8 +9,13 @@ class Reminders extends Controller {
     }
 
     public function create() {
+        // ✅ Prevent undefined session access
+        if (!isset($_SESSION['user']['id'])) {
+            die("User not authenticated.");
+        }
+
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $subject = $_POST['subject'];
+            $subject = trim($_POST['subject']);
             $reminder = $this->model('Reminder');
             $reminder->create_reminder($_SESSION['user']['id'], $subject);
             header('Location: /reminders');
