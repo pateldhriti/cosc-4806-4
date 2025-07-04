@@ -7,4 +7,13 @@
            </div>
         </div>
     </div>
-    <?php require_once 'app/views/templates/footer.php';
+
+    <ul>
+        <?php foreach ($data['reminders'] as $note): ?>
+            <li><?= htmlspecialchars($note['subject']) ?></li>
+        <?php endforeach; ?>
+    </ul>
+
+    <?php require_once 'app/views/templates/footer.php'; 
+
+?>
