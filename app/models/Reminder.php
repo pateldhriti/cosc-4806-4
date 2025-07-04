@@ -40,5 +40,12 @@ class Reminder {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
+    public function delete_reminder($id) {
+        $db = db_connect();
+        $stmt = $db->prepare("UPDATE notes SET deleted = 1 WHERE id = :id");
+        return $stmt->execute(['id' => $id]);
+    }
+
+
 }
 ?>

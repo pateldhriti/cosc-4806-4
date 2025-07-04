@@ -28,7 +28,7 @@ class User {
         $db = db_connect();
         $username = strtolower(trim($username));
 
-        // ✅ Check last 3 bad login attempts
+        // Lockout logic: check last 3 failed attempts
         $stmt = $db->prepare("SELECT * FROM log WHERE username = :username AND attempt = 'bad' ORDER BY timestamp DESC LIMIT 3");
         $stmt->execute(['username' => $username]);
         $attempts = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -36,27 +36,25 @@ class User {
         if (count($attempts) == 3) {
             $lastAttemptTime = strtotime($attempts[0]['timestamp']);
             if (time() - $lastAttemptTime < 60) {
-                return "⏳ Locked for 60 seconds due to too many failed logins.";
+                return "\u23F3 Locked for 60 seconds due to too many failed logins.";
             }
         }
 
-        // ✅ Try to find user
+        // Fetch user
         $stmt = $db->prepare("SELECT * FROM users WHERE username = :username");
         $stmt->execute(['username' => $username]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        // ✅ Successful login
         if ($user && password_verify($password, $user['password'])) {
             $this->log_attempt($username, 'good');
 
-            // ✅ Session setup for authentication and user info
+            // Set session variables
             $_SESSION['auth'] = true;
             $_SESSION['username'] = $username;
-            $_SESSION['user'] = $user; // ✅ This makes $_SESSION['user']['id'] available
+            $_SESSION['user'] = $user; // This is important for reminder features
 
             return true;
         } else {
-            
             $this->log_attempt($username, 'bad');
             return false;
         }
@@ -65,9 +63,14 @@ class User {
     private function log_attempt($username, $result) {
         $db = db_connect();
         $stmt = $db->prepare("INSERT INTO log (username, attempt) VALUES (:username, :result)");
-        $stmt->execute([
-            'username' => $username,
-            'result' => $result
-        ]);
+        $stmt->execute(['username' => $username, 'result' => $result]);
+    }
+
+    // Optional: helper function to fetch user by username if needed elsewhere
+    public function get_user_by_username($username) {
+        $db = db_connect();
+        $stmt = $db->prepare("SELECT * FROM users WHERE username = :username");
+        $stmt->execute(['username' => $username]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 }
