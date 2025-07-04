@@ -4,13 +4,11 @@ class Home extends Controller {
 
     public function index() {
       
-        if (!isset($_SESSION['auth'])){
-            header('Location: /login');
-            exit;
-        
-        }
+        $user = $this->model('User');
+        $data = $user->test();
 
         $this->view('home/index');
+        die;
     }
 
 }
