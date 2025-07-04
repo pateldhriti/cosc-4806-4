@@ -8,22 +8,27 @@ class User {
     public function __construct() {}
 
     public function create($username, $password) {
-        $db = db_connect();
+        $db = db_connect(); 
         $stmt = $db->prepare("SELECT * FROM users WHERE username = :username");
         $stmt->execute(['username' => $username]);
+
         if ($stmt->rowCount() > 0) {
             return "Username already exists.";
         }
+
         $hashed = password_hash($password, PASSWORD_DEFAULT);
         $insert = $db->prepare("INSERT INTO users (username, password) VALUES (:username, :password)");
-        return $insert->execute(['username' => $username, 'password' => $hashed]);
+        return $insert->execute([
+            'username' => $username,
+            'password' => $hashed
+        ]);
     }
 
     public function authenticate($username, $password) {
         $db = db_connect();
         $username = strtolower(trim($username));
 
-        // Check lockout
+        // ✅ Lockout logic
         $stmt = $db->prepare("SELECT * FROM log WHERE username = :username AND attempt = 'bad' ORDER BY timestamp DESC LIMIT 3");
         $stmt->execute(['username' => $username]);
         $attempts = $stmt->fetchAll(PDO::FETCH_ASSOC);
