@@ -3,10 +3,11 @@
     <h2>Create Reminder</h2>
     <form method="POST" action="/reminders/create">
         <div class="mb-3">
-            <input type="text" name="subject" class="form-control" placeholder="Enter reminder" required>
+            <label for="subject" class="form-label">Reminder</label>
+            <input type="text" name="subject" class="form-control" required>
         </div>
-        <button type="submit" class="btn btn-success">Create</button>
-        <a href="/reminders" class="btn btn-secondary">Back</a>
+        <button type="submit" class="btn btn-success">Add Reminder</button>
+        <a href="/reminders" class="btn btn-secondary">Cancel</a>
     </form>
 </div>
 <?php require_once 'app/views/templates/footer.php'; ?>

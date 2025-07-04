@@ -1,43 +1,46 @@
 <?php
 
-class Reminder {
+class Reminder extends Controller {
 
-    public function __construct() {}
-
-    public function get_all_reminders () {
+    public function get_all_reminders_by_username($username) {
         $db = db_connect();
-        $stmt = $db->prepare("select * from notes WHERE deleted = 0;");
-        $stmt->execute();
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        return $rows;
+        $stmt = $db->prepare("
+            SELECT notes.* FROM notes 
+            JOIN users ON notes.user_id = users.id 
+            WHERE users.username = :username AND notes.deleted = 0
+        ");
+        $stmt->execute(['username' => $username]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function create_reminder($user_id, $subject) {
+    public function create_reminder_by_username($username, $subject) {
         $db = db_connect();
-        $stmt = $db->prepare("INSERT INTO notes (user_id, subject, created_at, completed, deleted) 
-                              VALUES (:user_id, :subject, NOW(), 0, 0)");
+
+        $stmt = $db->prepare("SELECT id FROM users WHERE username = :username");
+        $stmt->execute(['username' => $username]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$user) {
+            return false;
+        }
+
+        $stmt = $db->prepare("
+            INSERT INTO notes (user_id, subject, created_at, completed, deleted) 
+            VALUES (:user_id, :subject, NOW(), 0, 0)
+        ");
         return $stmt->execute([
-            'user_id' => $user_id,
+            'user_id' => $user['id'],
             'subject' => $subject
         ]);
     }
 
-
-    public function update_reminder ($reminder_id, $new_subject) {
+    public function update_reminder($id, $new_subject) {
         $db = db_connect();
-        $stmt = $db->prepare("update notes set subject = :subject where id = :id");
+        $stmt = $db->prepare("UPDATE notes SET subject = :subject WHERE id = :id");
         return $stmt->execute([
-        'subject' => $new_subject,
-        'id' => $reminder_id
-         ]);    
-
-    }
-
-    public function get_reminder_by_id($id) {
-        $db = db_connect();
-        $stmt = $db->prepare("SELECT * FROM notes WHERE id = :id");
-        $stmt->execute(['id' => $id]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+            'subject' => $new_subject,
+            'id' => $id
+        ]);
     }
 
     public function delete_reminder($id) {
@@ -46,6 +49,10 @@ class Reminder {
         return $stmt->execute(['id' => $id]);
     }
 
-
+    public function get_reminder_by_id($id) {
+        $db = db_connect();
+        $stmt = $db->prepare("SELECT * FROM notes WHERE id = :id");
+        $stmt->execute(['id' => $id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
 }
-?>

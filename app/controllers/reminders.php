@@ -3,24 +3,21 @@
 class Reminders extends Controller {
 
     public function index() {
+        if (!isset($_SESSION['auth']) || !isset($_SESSION['username'])) {
+            echo "User not authenticated.";
+            exit;
+        }
+
         $reminder = $this->model('Reminder');
-        $list_of_reminders = $reminder->get_all_reminders();
+        $list_of_reminders = $reminder->get_all_reminders_by_username($_SESSION['username']);
         $this->view('reminders/index', ['reminders' => $list_of_reminders]);
     }
 
     public function create() {
-        session_start(); // ✅ Make sure session is started
-
-        if (!isset($_SESSION['user']['id'])) {
-            echo "<pre>";
-            print_r($_SESSION);
-            die("User not authenticated.");
-        }
-
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $subject = $_POST['subject'];
             $reminder = $this->model('Reminder');
-            $reminder->create_reminder($_SESSION['user']['id'], $subject);
+            $reminder->create_reminder_by_username($_SESSION['username'], $subject);
             header('Location: /reminders');
             exit;
         }
