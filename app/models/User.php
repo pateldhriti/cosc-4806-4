@@ -24,11 +24,12 @@ class User {
         ]);
     }
 
+    
     public function authenticate($username, $password) {
         $db = db_connect();
         $username = strtolower(trim($username));
 
-        // ✅ Lockout logic
+      \
         $stmt = $db->prepare("SELECT * FROM log WHERE username = :username AND attempt = 'bad' ORDER BY timestamp DESC LIMIT 3");
         $stmt->execute(['username' => $username]);
         $attempts = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -48,12 +49,14 @@ class User {
             $this->log_attempt($username, 'good');
             $_SESSION['auth'] = true;
             $_SESSION['username'] = $username;
+            $_SESSION['user'] = $user; 
             return true;
         } else {
             $this->log_attempt($username, 'bad');
             return false;
         }
     }
+ 
 
     private function log_attempt($username, $result) {
         $db = db_connect();
